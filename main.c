@@ -17,9 +17,20 @@ int main(int argc, char *argv){
    fread(buffer,sizeof(buffer),1,fp);
  
  
-   for(int i = 0; i<320; i++)
-    printf("%x ", buffer[i]);
-
-    printf("\n\n");
+   for(int i = 0; i<320; i++){
+       if( i%32 == 0 ){
+           printf("\n\n");
+       }
+       if( i%2 == 1 ){
+           printf("%x ", buffer[i]);
+       } else {
+           printf("%x", buffer[i]);
+       }
+       
+   }
+    
+   fclose(fp);
+   printf("\n\n");
+   
    return 0;
 }
