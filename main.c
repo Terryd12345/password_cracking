@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char *argv){
    unsigned char buffer[320];
+
    char file_name[25] = "pwd4sha256";
    FILE *fp;
  
@@ -21,12 +23,7 @@ int main(int argc, char *argv){
        if( i%32 == 0 ){
            printf("\n\n");
        }
-       if( i%2 == 1 ){
-           printf("%x ", buffer[i]);
-       } else {
-           printf("%x", buffer[i]);
-       }
-       
+       printf("%02x", buffer[i]);
    }
     
    fclose(fp);
