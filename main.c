@@ -8,6 +8,7 @@ int main(int argc, char *argv){
 
    char file_name[25] = "pwd4sha256";
    FILE *fp;
+   char first_10_hashes[36][11];
  
    fp = fopen(file_name, "rb"); // read mode
  
@@ -21,18 +22,25 @@ int main(int argc, char *argv){
     
    // Convert binary values into hexidecimal strings 
    char hex_value[3];
-   char full_hex[32];
+   char full_hex[36];
+   int j = 0;
    
    // Loop through input and create hexidecimal strings 
    for(int i = 0; i<320; i++){
        if( i%32 == 0 ){
-           printf("%s\n", full_hex);
-           memset(full_hex, '\0', 32);
+           printf("\n%s\n\n", full_hex);
+           memset(full_hex, '\0', sizeof(full_hex)); 
        }
+       // Build the hex string
        sprintf(hex_value, "%02x", buffer[i]);
        strncat(full_hex, hex_value, 3);
+       printf("%02x", buffer[i]);
    }
-   printf("%s", full_hex);
+   printf("%s\n", full_hex);
+   memset(full_hex, '\0', sizeof(full_hex));  
+   
+    
+   
     
    fclose(fp);
    printf("\n\n");
