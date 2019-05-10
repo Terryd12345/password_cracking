@@ -1,4 +1,4 @@
-all: main.c functions.h
+all: main.c functions.h algos.h
 	gcc main.c -o crack
 
 test: sha256_test.c sha256.h sha256.c
