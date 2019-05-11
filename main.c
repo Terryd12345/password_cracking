@@ -6,7 +6,6 @@
 #include "sha256.h"
 #include "sha256.c"
 #include "functions.h"
-#include "algos.h"
 
 
 void four_letter_bruteforce(int hashes[10][32]);
