@@ -41,13 +41,6 @@ void print_hashes(int hashes[10][32]){
    }
 }
 
-void print_word(int word[]){
-    for(int i=0; i<32; i++){
-        printf("%d", word[i]);
-    }
-    printf("\n");
-}
-
 void read_commonpasswords(){
     FILE *fp;
     fp = fopen("common_passwords.txt", "r");
@@ -69,7 +62,10 @@ void read_commonpasswords(){
     fclose(fp);
 }
 
-// ASCII values -> 32 to 126
+/** 
+ * n^4 brute force search of all potential four char combinations
+ * prints out matching hashes as well as the index
+ * **/
 void four_letter_bruteforce(int hashes[10][32]){
     BYTE buf[SHA256_BLOCK_SIZE];
     SHA256_CTX ctx;
@@ -86,23 +82,23 @@ void four_letter_bruteforce(int hashes[10][32]){
                     word[2] = c;
                     word[3] = d;
                     word[4] = '\0';
-                    //printf("%s\n", word);
+                    
                     
                     sha256_init(&ctx);
                     sha256_update(&ctx, word, strlen(word));
                     sha256_final(&ctx, buf);
-                    //printf("%s\n", ctx.data);
+                    
                     
                     for(int j=1; j<11; j++){
                         found = 1;
                         for(int i=0; i<32; i++){
-                            //printf("%d ", buf[i]);
                             if( buf[i] != hashes[j][i] ){
                                 found = 0;
                                 break;
                             }
                         }
                         if( found == 1 ){
+                            ctx.data[4] = '\0';
                             printf("%s %d\n", ctx.data, j);
                         }
                     }

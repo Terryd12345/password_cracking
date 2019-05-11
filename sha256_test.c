@@ -36,8 +36,6 @@ void sha256_test()
 		printf("%d ", buf[i]);
 	}
 	printf("\n");
-	//print_state(ctx.state);
-
 }
 
 int main()
