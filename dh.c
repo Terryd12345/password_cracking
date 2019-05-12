@@ -15,18 +15,19 @@
 #include <unistd.h>
 #include <math.h>
 
+int compute_key(int g, int m, int p);
+
 
 int main(int argc, char ** argv)
 {
     //char *openssl_result = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-    double b = 227; // e3
-    double g = 15;
+    int b = 227; // e3
+    int g = 15;
     int p = 97;
     int a; // will be sent by server
-    int connection_port = 7800;
-    double private_key = pow(g, b); 
+    int private_key = compute_key(g, b, p);
     
-    printf("%f\n\n", private_key);
+    printf("private key: %d\n", private_key);
 
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
@@ -91,7 +92,7 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* Send b value 
+    /* Send b value */
     
 
     bzero(buffer, 256);
@@ -103,8 +104,8 @@ int main(int argc, char ** argv)
     if (n < 0)
     {
         perror("ERROR writing to socket");
+    }
 
-    */
     
     /* Get response 
     */
@@ -121,8 +122,65 @@ int main(int argc, char ** argv)
 
     a = atoi(buffer);
 
-    printf("%d\n", a);
+    printf("a: %d\n", a);
+
+    /* Send secret key */
+
+    bzero(buffer, 256);
+
+    char *secret_key; 
+    int new_exponent = a*b;
+    printf("a*b: %d\n", new_exponent);
+    int secret_key_int = compute_key(g, new_exponent, p);
+
+    sprintf(secret_key, "%d", secret_key_int);
+
+    printf("secret_key: %d\n", secret_key_int);
+
+    strcpy(buffer, secret_key);
+
+    n = write(sockfd, buffer, strlen(buffer));
+
+    if (n < 0)
+    {
+        perror("ERROR writing to socket");
+    }
+
+    /* Get response 
+    */
+
+    bzero(buffer, 256);
+
+    n = read(sockfd, buffer, 255);
+
+    if (n < 0)
+    {
+        perror("ERROR reading from socket");
+        exit(0);
+    }
+
+    printf("%s\n", buffer);
 
     return 0;
 }
 
+// Function to compute a^m mod n
+int compute_key(int g, int m, int p)
+{
+	int r;
+	int y = 1;
+
+	while (m > 0)
+	{
+		r = m % 2;
+
+		// fast exponention 
+		if (r == 1)
+			y = (y*g) % p;
+		g = g*g % p;
+
+		m = m / 2;
+	}
+
+	return y;
+}
