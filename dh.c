@@ -84,6 +84,8 @@ int main(int argc, char ** argv)
 
     strcpy(buffer, "tdenning\n");
 
+    printf("Sending name: tdenning\n");
+
     n = write(sockfd, buffer, strlen(buffer));
 
     if (n < 0)
@@ -128,16 +130,7 @@ int main(int argc, char ** argv)
 
     bzero(buffer, 256);
 
-    char *secret_key; 
-    int new_exponent = a*b;
-    printf("a*b: %d\n", new_exponent);
-    int secret_key_int = compute_key(g, new_exponent, p);
-
-    sprintf(secret_key, "%d", secret_key_int);
-
-    printf("secret_key: %d\n", secret_key_int);
-
-    strcpy(buffer, secret_key);
+    
 
     n = write(sockfd, buffer, strlen(buffer));
 

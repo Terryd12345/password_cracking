@@ -69,25 +69,28 @@ void read_commonpasswords(){
 void four_letter_bruteforce(int hashes[10][32]){
     BYTE buf[SHA256_BLOCK_SIZE];
     SHA256_CTX ctx;
-    char word[4];
+    BYTE word[4];
     int a,b,c,d;
     int found = 1;
+    int words_found = 0;
     
     for(a=32; a<127; a++){
+        if( words_found == 10 ) break;
         for(b=32; b<127; b++){
+            if( words_found == 10 ) break;
             for(c=32; c<127; c++){
+                if( words_found == 10 ) break;
                 for(d=32; d<127; d++){
+                    if( words_found == 10 ) break;
                     word[0] = a;
                     word[1] = b;
                     word[2] = c;
                     word[3] = d;
                     word[4] = '\0';
                     
-                    
                     sha256_init(&ctx);
-                    sha256_update(&ctx, word, strlen(word));
+                    sha256_update(&ctx, word, sizeof(word));
                     sha256_final(&ctx, buf);
-                    
                     
                     for(int j=1; j<11; j++){
                         found = 1;
@@ -98,6 +101,7 @@ void four_letter_bruteforce(int hashes[10][32]){
                             }
                         }
                         if( found == 1 ){
+                            words_found++;
                             ctx.data[4] = '\0';
                             printf("%s %d\n", ctx.data, j);
                         }

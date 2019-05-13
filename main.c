@@ -10,10 +10,7 @@
 
 void four_letter_bruteforce(int hashes[10][32]);
 
-int main(int argc, char *argv){
-   // If this is removed there is a segfault for some reason
-   unsigned char buffer[320];
-
+int main(int argc, char **argv){
    int hashes[10][32];
    save_hashes(hashes);
    //print_hashes(hashes);
