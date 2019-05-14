@@ -13,19 +13,15 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <math.h>
+#include <math.h> 
+#include <sys/types.h>  
+#include <sys/wait.h> 
 
 int compute_key(int g, int m, int p);
 
-
 int main(int argc, char ** argv)
 {
-    //char *openssl_result = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     
-    //int b = 1; // e3
-    //int g = 15;
-    //int p = 97;
-
     int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent * server;
@@ -60,10 +56,11 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* ----------------------- end setup -------------------------- */
+    /* ----------------------- end server connection setup -------------------------- */
 
-    /* Send username
-    */
+
+
+    /* ----------------------- Send username -------------------------- */
 
     bzero(buffer, 256);
 
@@ -79,14 +76,15 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* Send g^b(mod p) value */
-    
+    /* ----------------------- end send username -------------------------- */
+
+    /* ----------------------- send g^b(mod p) -------------------------- */
 
     bzero(buffer, 256);
 
-    strcpy(buffer, "15\n");
+    sprintf(buffer, "%s\n", argv[1]);
 
-    printf("Writing g^b(mod p): %s\n", buffer);
+    printf("g^b(mod p): %s\n", buffer);
 
     n = write(sockfd, buffer, strlen(buffer));
 
@@ -95,9 +93,9 @@ int main(int argc, char ** argv)
         perror("ERROR writing to socket");
     }
 
-    
-    /* Get response, should receive g^a(mod p)
-    */
+    /* ----------------------- receive g^a(mod p) -------------------------- */
+
+    /* Receive g^a(mod p) */
 
     bzero(buffer, 256);
 
@@ -113,32 +111,62 @@ int main(int argc, char ** argv)
 
     printf("g^a(mod p): %d\n", gamodp);
 
-    /* Send secret key 
-    */
 
-    bzero(buffer, 256);
+    /* ----------------------- Generate g^b(mod p) -------------------------- */
 
-    n = write(sockfd, "10", strlen("10")); // write g^ab(mod p)
+    pid_t pid;
 
-    if (n < 0)
-    {
-        perror("ERROR writing to socket");
-    }
-
-    /* Get response ( hopefully get passwords )
-    */
-
-    bzero(buffer, 256);
-
-    n = read(sockfd, buffer, 255);
-
-    if (n < 0)
-    {
-        perror("ERROR reading from socket");
+    if( argc != 2 ){
+        printf("Forgot to include B as argument.\n");
         exit(0);
     }
 
-    printf("%s\n", buffer);
+    pid = fork();
+
+    if( pid < 0 ){
+        printf("failed to create child\n"); 
+        exit(0); 
+    } else if( pid == 0 ){ // child process
+        /* Calculate g^b(mod p) */
+        char *gbmodp_input;
+        sprintf(gbmodp_input, "15 %s 97 | p", argv[1]);
+        execl("/usr/bin/dc", gbmodp_input, NULL);
+
+    } else { // parent process
+        wait(NULL);
+
+        /* Calculate g^ab(mod p) and send */
+
+        bzero(buffer, 256);
+
+        n = write(sockfd, "10", strlen("10")); // write g^ab(mod p)
+
+        if (n < 0)
+        {
+            perror("ERROR writing to socket");
+        }
+
+        /* Receive response from server */
+
+        bzero(buffer, 256);
+
+        n = read(sockfd, buffer, 255);
+
+        if (n < 0)
+        {
+            perror("ERROR reading from socket");
+            exit(0);
+        }
+
+        printf("%s\n", buffer);
+
+
+        printf("Done\n");
+    }
+
+    /* ----------------------- end processes -------------------------- */
+    
+    
 
     return 0;
 }
