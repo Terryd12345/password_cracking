@@ -21,13 +21,14 @@ int compute_key(int g, int m, int p);
 int main(int argc, char ** argv)
 {
     //char *openssl_result = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-    int b = 227; // e3
+    int b = atoi(argv[1]);
+    printf("b: %d\n", b);
     int g = 15;
     int p = 97;
-    int a; // will be sent by server
-    int private_key = compute_key(g, b, p);
-    
-    printf("private key: %d\n", private_key);
+    int gamodp; // will be sent by server
+    int public_key = compute_key(g, b, p);
+
+    printf("g^b(mod p): %d\n", public_key);
 
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
@@ -94,12 +95,15 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* Send b value */
+    /* Send g^b mod p value */
     
 
     bzero(buffer, 256);
 
-    strcpy(buffer, "2\n2\n7\n");
+    char b_string[4];
+    sprintf(b_string, "%d\n", public_key);
+
+    strcpy(buffer, b_string);
 
     n = write(sockfd, buffer, strlen(buffer));
 
@@ -122,17 +126,19 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    a = atoi(buffer);
+    gamodp = atoi(buffer);
 
-    printf("a: %d\n", a);
+    printf("g^a(mod p): %d\n", gamodp);
 
     /* Send secret key */
 
     bzero(buffer, 256);
 
-    
+    char private_key[2];
+    int private_key_int = compute_key(g, gamodp*b, p);
+    sprintf(private_key, "%d", private_key_int);
 
-    n = write(sockfd, buffer, strlen(buffer));
+    n = write(sockfd, private_key, strlen(private_key));
 
     if (n < 0)
     {
