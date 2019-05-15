@@ -9,7 +9,7 @@ void four_letter_bruteforce(int hashes[10][32]);
 void save_hashes(int hashes[10][32]){
     unsigned char buffer[320];
     FILE *fp;
-   fp = fopen("pwd4sha256", "rb"); // read mode
+   fp = fopen("pwd4sha256", "rb");
  
    if (fp == NULL)
    {

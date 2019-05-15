@@ -13,59 +13,37 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <math.h>
+#include <math.h> 
+#include <sys/types.h>  
+#include <sys/wait.h> 
 
 int compute_key(int g, int m, int p);
 
-
 int main(int argc, char ** argv)
 {
-    //char *openssl_result = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-    int b = atoi(argv[1]);
-    printf("b: %d\n", b);
-    int g = 15;
-    int p = 97;
-    int gamodp; // will be sent by server
-    int public_key = compute_key(g, b, p);
-
-    printf("g^b(mod p): %d\n", public_key);
-
-    int sockfd, portno, n;
+    
+    int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent * server;
 
+    int gamodp;
+
     char buffer[256];
 
-    portno = 7800;
 
+    /* ----------------------- setup server connection -------------------------- */
 
-    /* Translate host name into peer's IP address ;
-     * This is name translation service by the operating system
-     */
     server = gethostbyname("172.26.37.44");
-
     if (server == NULL)
     {
         fprintf(stderr, "ERROR, no such host\n");
         exit(0);
     }
-
-    /* Building data structures for socket */
-
     bzero((char *)&serv_addr, sizeof(serv_addr));
-
     serv_addr.sin_family = AF_INET;
-
     bcopy(server->h_addr_list[0], (char *)&serv_addr.sin_addr.s_addr, server->h_length);
-
-    serv_addr.sin_port = htons(portno);
-
-    /* Create TCP socket -- active open
-    * Preliminary steps: Setup: creation of active open socket
-    */
-
+    serv_addr.sin_port = htons(7800);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
     if (sockfd < 0)
     {
         perror("ERROR opening socket");
@@ -78,8 +56,11 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* Send username
-    */
+    /* ----------------------- end server connection setup -------------------------- */
+
+
+
+    /* ----------------------- Send username -------------------------- */
 
     bzero(buffer, 256);
 
@@ -95,15 +76,15 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* Send g^b mod p value */
-    
+    /* ----------------------- end send username -------------------------- */
+
+    /* ----------------------- send g^b(mod p) -------------------------- */
 
     bzero(buffer, 256);
 
-    char b_string[4];
-    sprintf(b_string, "%d\n", public_key);
+    sprintf(buffer, "%s\n", argv[1]);
 
-    strcpy(buffer, b_string);
+    printf("g^b(mod p): %s\n", buffer);
 
     n = write(sockfd, buffer, strlen(buffer));
 
@@ -112,9 +93,9 @@ int main(int argc, char ** argv)
         perror("ERROR writing to socket");
     }
 
-    
-    /* Get response 
-    */
+    /* ----------------------- receive g^a(mod p) -------------------------- */
+
+    /* Receive g^a(mod p) */
 
     bzero(buffer, 256);
 
@@ -130,56 +111,62 @@ int main(int argc, char ** argv)
 
     printf("g^a(mod p): %d\n", gamodp);
 
-    /* Send secret key */
 
-    bzero(buffer, 256);
+    /* ----------------------- Generate g^b(mod p) -------------------------- */
 
-    char private_key[2];
-    int private_key_int = compute_key(g, gamodp*b, p);
-    sprintf(private_key, "%d", private_key_int);
+    pid_t pid;
 
-    n = write(sockfd, private_key, strlen(private_key));
-
-    if (n < 0)
-    {
-        perror("ERROR writing to socket");
-    }
-
-    /* Get response 
-    */
-
-    bzero(buffer, 256);
-
-    n = read(sockfd, buffer, 255);
-
-    if (n < 0)
-    {
-        perror("ERROR reading from socket");
+    if( argc != 2 ){
+        printf("Forgot to include B as argument.\n");
         exit(0);
     }
 
-    printf("%s\n", buffer);
+    pid = fork();
+
+    if( pid < 0 ){
+        printf("failed to create child\n"); 
+        exit(0); 
+    } else if( pid == 0 ){ // child process
+        /* Calculate g^b(mod p) */
+        char *gbmodp_input;
+        sprintf(gbmodp_input, "15 %s 97 | p", argv[1]);
+        execl("/usr/bin/dc", gbmodp_input, NULL);
+
+    } else { // parent process
+        wait(NULL);
+
+        /* Calculate g^ab(mod p) and send */
+
+        bzero(buffer, 256);
+
+        n = write(sockfd, "10", strlen("10")); // write g^ab(mod p)
+
+        if (n < 0)
+        {
+            perror("ERROR writing to socket");
+        }
+
+        /* Receive response from server */
+
+        bzero(buffer, 256);
+
+        n = read(sockfd, buffer, 255);
+
+        if (n < 0)
+        {
+            perror("ERROR reading from socket");
+            exit(0);
+        }
+
+        printf("%s\n", buffer);
+
+
+        printf("Done\n");
+    }
+
+    /* ----------------------- end processes -------------------------- */
+    
+    
 
     return 0;
-}
-
-// Function to compute a^m mod n
-int compute_key(int g, int m, int p)
-{
-	int r;
-	int y = 1;
-
-	while (m > 0)
-	{
-		r = m % 2;
-
-		// fast exponention 
-		if (r == 1)
-			y = (y*g) % p;
-		g = g*g % p;
-
-		m = m / 2;
-	}
-
-	return y;
 }
