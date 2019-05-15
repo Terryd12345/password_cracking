@@ -17,6 +17,7 @@
 #include <sys/types.h>  
 #include <sys/wait.h> 
 
+
 int compute_key(int g, int m, int p);
 
 int main(int argc, char ** argv)
@@ -78,24 +79,9 @@ int main(int argc, char ** argv)
 
     /* ----------------------- end send username -------------------------- */
 
-    /* ----------------------- send g^b(mod p) -------------------------- */
-
-    bzero(buffer, 256);
-
-    sprintf(buffer, "%s\n", argv[1]);
-
-    printf("g^b(mod p): %s\n", buffer);
-
-    n = write(sockfd, buffer, strlen(buffer));
-
-    if (n < 0)
-    {
-        perror("ERROR writing to socket");
-    }
+    
 
     /* ----------------------- receive g^a(mod p) -------------------------- */
-
-    /* Receive g^a(mod p) */
 
     bzero(buffer, 256);
 
@@ -115,11 +101,17 @@ int main(int argc, char ** argv)
     /* ----------------------- Generate g^b(mod p) -------------------------- */
 
     pid_t pid;
+    int pipes[2];
+    pipe(pipes);
 
     if( argc != 2 ){
         printf("Forgot to include B as argument.\n");
         exit(0);
     }
+
+    char gbmodp_input[30];
+    sprintf(gbmodp_input, "--expression='15 %s 97 | p'", argv[1]);
+    
 
     pid = fork();
 
@@ -127,10 +119,9 @@ int main(int argc, char ** argv)
         printf("failed to create child\n"); 
         exit(0); 
     } else if( pid == 0 ){ // child process
-        /* Calculate g^b(mod p) */
-        char *gbmodp_input;
-        sprintf(gbmodp_input, "15 %s 97 | p", argv[1]);
-        execl("/usr/bin/dc", gbmodp_input, NULL);
+        /* Calculate g^b(mod p) */  
+        execl("/usr/bin/dc", "dc", gbmodp_input, (char*)0);
+        //exit(0);
 
     } else { // parent process
         wait(NULL);
@@ -139,7 +130,7 @@ int main(int argc, char ** argv)
 
         bzero(buffer, 256);
 
-        n = write(sockfd, "10", strlen("10")); // write g^ab(mod p)
+        n = write(sockfd, "10\n", strlen("10\n")); // write g^ab(mod p)
 
         if (n < 0)
         {
