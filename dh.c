@@ -1,9 +1,3 @@
-/* A simple client program for server.c
-
-   To compile: gcc client.c -o client
-
-   To run: start the server, then the client */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -112,7 +106,6 @@ int main(int argc, char ** argv)
     printf("Receieved g^a(mod p): %d\n", gamodp);
 
     /* ----------------------- Generate g^a*b(mod p) -------------------------- */
-
 
     if( argc != 2 ){
         printf("Forgot to include B as argument.\n");

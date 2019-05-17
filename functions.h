@@ -40,7 +40,7 @@ void save_hashes(int hashes[30][32]){
     unsigned char buffer2[640];
     FILE *fp2;
     fp2 = fopen("pwd6sha256", "rb");
-    fread(buffer2, sizeof(buffer2), 1, fp);
+    fread(buffer2, sizeof(buffer2), 1, fp2);
     fclose(fp2);
 
     j=9;
