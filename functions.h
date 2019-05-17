@@ -6,29 +6,51 @@ void print_word(int word[]);
 void read_commonpasswords();
 void four_letter_bruteforce(int hashes[10][32]);
 
-void save_hashes(int hashes[10][32]){
+void save_hashes(int hashes[30][32]){
+
+    /* Read in first 10 hashes */
+
     unsigned char buffer[320];
     FILE *fp;
-   fp = fopen("pwd4sha256", "rb");
- 
-   if (fp == NULL)
-   {
-      perror("Error while opening the file.\n");
-      exit(EXIT_FAILURE);
-   }
+    fp = fopen("pwd4sha256", "rb");
+    
+    if (fp == NULL)
+    {
+        perror("Error while opening the file.\n");
+        exit(EXIT_FAILURE);
+    }
 
-   fread(buffer,sizeof(buffer),1,fp);
-   fclose(fp);
+    fread(buffer,sizeof(buffer),1,fp);
+    fclose(fp);
+    
     // Loop over first 10 hashes and save them
-   int j=0, e=0;
-   for(int i = 0; i<320; i++){
-       if( i%32 == 0 ){
-           j++;
-           e = 0;
-       }
-       hashes[j][e] = buffer[i];  
-       e++;
-   }
+    int j=0, e=0;
+    for(int i = 0; i<320; i++){
+        if( i%32 == 0 ){
+            j++;
+            e = 0;
+        }
+        hashes[j][e] = buffer[i];  
+        e++;
+    }
+
+    // save rest of hashes
+    unsigned char buffer2[640];
+    FILE *fp2;
+    fp2 = fopen("pwd6sha256", "rb");
+    fread(buffer2, sizeof(buffer2), 1, fp);
+    fclose(fp2);
+
+    j=9;
+    for(int i = 0; i<640; i++){
+        if( i%32 == 0 ){
+            j++;
+            e = 0;
+        }
+        hashes[j][e] = buffer[i];  
+        e++;
+    }
+
 }
 
 void print_hashes(int hashes[10][32]){
