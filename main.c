@@ -43,23 +43,17 @@ void passwords(){
    }
 
    while (fgets(str, 6, fp) != NULL){
-      memset(word, '\0', 6);
-      int dec_value;
-      for( int i=0; i<6; i++){
-         dec_value = str[i];
-         if( dec_value < 0 ){
-            word[i] = dec_value + 256;
-         } else {
-            word[i] = dec_value;
-         }
-      }
-      word[6] = '\0';
+      memcpy(word, str, sizeof(word));
       
-
       sha256_init(&ctx);
       sha256_update(&ctx, word, sizeof(word));
       sha256_final(&ctx, buf);
-      printf("%s", word);
+
+      for(int i=0; i<32; i++){
+         printf("%02x", buf[i]);
+      }
+      printf("\n");
+      
    }
 
    fclose(fp);
