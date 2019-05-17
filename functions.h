@@ -5,7 +5,9 @@ void print_hashes(int hashes[10][32]);
 void print_word(int word[]);
 void read_commonpasswords();
 void four_letter_bruteforce(int hashes[10][32]);
+void clean_common_passwords();
 
+/* Reads binary files and saves hash values in an array */ 
 void save_hashes(int hashes[30][32]){
 
     /* Read in first 10 hashes */
@@ -53,35 +55,14 @@ void save_hashes(int hashes[30][32]){
 
 }
 
+/* Used to print hash values from array */
 void print_hashes(int hashes[10][32]){
-    // Loop over our current saved hashes 
    for(int i=1; i<11; i++){
        for(int j=0; j<32; j++){
            printf("%02x", hashes[i][j]);
        }
        printf("\n");
    }
-}
-
-void read_commonpasswords(){
-    FILE *fp;
-    fp = fopen("common_passwords.txt", "r");
-    char ch;
-    char word[100];
-    int i = 0;
-    
-    while( (ch = getc(fp)) != EOF )
-    {
-        if( ch == '\n' ){
-            printf("%s\n", word);
-            memset(word, '\0', 100);
-            i = 0;
-        } else {
-            word[i] = ch;
-            i++;
-        }
-    }
-    fclose(fp);
 }
 
 /** 
@@ -134,4 +115,33 @@ void four_letter_bruteforce(int hashes[30][32]){
             }              
         }
     }
+}
+
+/* Find all 6 letter common passwords and pass them into new file */
+void clean_common_passwords(){
+    FILE *fp;
+    FILE *fp2;
+    char str[20];
+    char* filename = "common_passwords.txt";
+    char* filename2 = "six_letter_common_passwords.txt";
+ 
+    fp = fopen(filename, "r");
+    fp2 = fopen(filename2, "w");
+
+    if (fp == NULL){
+        printf("Could not open file %s",filename);
+        exit(0);
+    }
+    if (fp2 == NULL){
+        printf("Could not open file %s",filename);
+        exit(0);
+    }
+
+    while (fgets(str, 20, fp) != NULL)
+        if(strlen(str) == 6){
+           fprintf (fp2, "%s", str);
+        }
+        
+    fclose(fp);
+    fclose(fp2);
 }
