@@ -6,12 +6,12 @@ void print_word(int word[]);
 void read_commonpasswords();
 void four_letter_bruteforce(int hashes[10][32]);
 void clean_common_passwords();
+void check_six_letter_passwords(int hashes[30][32]);
 
 /* Reads binary files and saves hash values in an array */ 
 void save_hashes(int hashes[30][32]){
 
     /* Read in first 10 hashes */
-
     unsigned char buffer[320];
     FILE *fp;
     fp = fopen("pwd4sha256", "rb");
@@ -108,9 +108,7 @@ void four_letter_bruteforce(int hashes[30][32]){
                             ctx.data[4] = '\0';
                             printf("%s %d\n", ctx.data, j);
                         }
-                    }
-
-                    
+                    }  
                 }
             }              
         }
@@ -144,4 +142,41 @@ void clean_common_passwords(){
         
     fclose(fp);
     fclose(fp2);
+}
+
+void check_six_letter_passwords(int hashes[30][32]){
+
+   BYTE buf[SHA256_BLOCK_SIZE];
+   SHA256_CTX ctx;
+   BYTE word[6];
+   
+
+   FILE *fp;
+   char str[6];
+   char* filename = "six_letter_common_passwords.txt";
+
+   fp = fopen(filename, "r");
+   if (fp == NULL){
+      printf("Could not open file %s",filename);
+      exit(0);
+   }
+
+   while (fgets(str, 6, fp) != NULL){
+      memcpy(word, str, sizeof(word));
+      
+      sha256_init(&ctx);
+      sha256_update(&ctx, word, sizeof(word));
+      sha256_final(&ctx, buf);
+      
+      // print each password as a hash
+      for(int i=0; i<32; i++){
+         printf("%02x", buf[i]);
+      }
+      printf("\n");
+      
+   }
+   
+
+   fclose(fp);
+
 }
