@@ -18,7 +18,7 @@
 #include <sys/wait.h> 
 
 
-int compute_key(int g, int m, int p);
+int compute(int g, int x, int p);
 
 int main(int argc, char ** argv)
 {
@@ -57,9 +57,6 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* ----------------------- end server connection setup -------------------------- */
-
-
 
     /* ----------------------- Send username -------------------------- */
 
@@ -77,11 +74,28 @@ int main(int argc, char ** argv)
         exit(0);
     }
 
-    /* ----------------------- end send username -------------------------- */
+    /* ----------------------- Generate g^b(mod p) -------------------------- */
 
+    bzero(buffer, 256);
+
+    if( argc != 2 ){
+        printf("Forgot to include B as argument.\n");
+        exit(0);
+    }
+
+    int gbmodp = compute(15, atoi(argv[1]), 97);
+    sprintf(buffer, "%d\n", gbmodp);
+
+    printf("Sending gbmodp: %d\n", gbmodp);
+    n = write(sockfd, buffer, strlen(buffer));
+
+    if (n < 0)
+    {
+        perror("ERROR writing to socket");
+    }
     
 
-    /* ----------------------- receive g^a(mod p) -------------------------- */
+    /* ----------------------- Receive g^a(mod p) -------------------------- */
 
     bzero(buffer, 256);
 
@@ -95,69 +109,72 @@ int main(int argc, char ** argv)
 
     gamodp = atoi(buffer);
 
-    printf("g^a(mod p): %d\n", gamodp);
+    printf("Receieved g^a(mod p): %d\n", gamodp);
 
+    /* ----------------------- Generate g^a*b(mod p) -------------------------- */
 
-    /* ----------------------- Generate g^b(mod p) -------------------------- */
-
-    pid_t pid;
-    int pipes[2];
-    pipe(pipes);
 
     if( argc != 2 ){
         printf("Forgot to include B as argument.\n");
         exit(0);
     }
 
-    char gbmodp_input[30];
-    sprintf(gbmodp_input, "--expression='15 %s 97 | p'", argv[1]);
     
 
-    pid = fork();
+    bzero(buffer, 256);
 
-    if( pid < 0 ){
-        printf("failed to create child\n"); 
-        exit(0); 
-    } else if( pid == 0 ){ // child process
-        /* Calculate g^b(mod p) */  
-        execl("/usr/bin/dc", "dc", gbmodp_input, (char*)0);
-        //exit(0);
+    int shared_key = compute(gamodp, atoi(argv[1]), 97);
 
-    } else { // parent process
-        wait(NULL);
+    sprintf(buffer, "%d\n", shared_key);
 
-        /* Calculate g^ab(mod p) and send */
+    printf("Sending gabmodp: %d\n", gbmodp);
+    n = write(sockfd, buffer, strlen(buffer));
 
-        bzero(buffer, 256);
-
-        n = write(sockfd, "10\n", strlen("10\n")); // write g^ab(mod p)
-
-        if (n < 0)
-        {
-            perror("ERROR writing to socket");
-        }
-
-        /* Receive response from server */
-
-        bzero(buffer, 256);
-
-        n = read(sockfd, buffer, 255);
-
-        if (n < 0)
-        {
-            perror("ERROR reading from socket");
-            exit(0);
-        }
-
-        printf("%s\n", buffer);
-
-
-        printf("Done\n");
+    if (n < 0)
+    {
+        perror("ERROR writing to socket");
     }
 
-    /* ----------------------- end processes -------------------------- */
+    /* ----------------------- Receive confirmation from server -------------------------- */
+
+
+    bzero(buffer, 256);
+
+    n = read(sockfd, buffer, 255);
+
+    if (n < 0)
+    {
+        perror("ERROR reading from socket");
+        exit(0);
+    }
+
+    printf("%s\n", buffer);
+
+   
     
     
 
     return 0;
+}
+
+// Function to compute a^m mod n
+// https://www.techiedelight.com/c-program-demonstrate-diffie-hellman-algorithm/
+int compute(int g, int x, int p)
+{
+	int r;
+	int y = 1;
+
+	while (x > 0)
+	{
+		r = x % 2;
+
+		// fast exponention 
+		if (r == 1)
+			y = (y*g) % p;
+		g = g*g % p;
+
+		x = x / 2;
+	}
+
+	return y;
 }
