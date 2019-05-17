@@ -119,7 +119,7 @@ void four_letter_bruteforce(int hashes[30][32]){
 void clean_common_passwords(){
     FILE *fp;
     FILE *fp2;
-    char str[20];
+    char str[50];
     char* filename = "common_passwords.txt";
     char* filename2 = "six_letter_common_passwords.txt";
  
@@ -135,8 +135,9 @@ void clean_common_passwords(){
         exit(0);
     }
 
-    while (fgets(str, 20, fp) != NULL)
+    while (fgets(str, 50, fp) != NULL)
         if(strlen(str) == 7){
+           str[7] = '\0';
            fprintf (fp2, "%s", str);
         }
         
@@ -151,10 +152,10 @@ void check_six_letter_passwords(int hashes[30][32]){
    BYTE buf[SHA256_BLOCK_SIZE];
    SHA256_CTX ctx;
    BYTE word[6];
-   char str[6];
+   char str[20];
 
    FILE *fp;
-   char* filename = "six_letter_common_passwords.txt";
+   char* filename = "common_passwords.txt";
 
    fp = fopen(filename, "r");
    if (fp == NULL){
@@ -162,9 +163,25 @@ void check_six_letter_passwords(int hashes[30][32]){
       exit(0);
    }
     
-   while (fgets(str, 6, fp) != NULL){
-      memcpy(word, str, sizeof(word));
-      printf("%s\n", word);
+   while (fgets(str, 20, fp) != NULL){
+      
+      if( strlen(str) == 7 ){
+          
+          memcpy(word, str, sizeof(word));
+          word[6] = '\0'; 
+          //printf("%s\n", str);
+
+          sha256_init(&ctx);
+          sha256_update(&ctx, word, sizeof(word));
+          sha256_final(&ctx, buf);
+
+          printf("%s\n", word);
+          for(int i=0; i<32; i++){
+              printf("%02x", buf[i]);
+          }
+          printf("\n");
+      }
+      
    }
    
    
