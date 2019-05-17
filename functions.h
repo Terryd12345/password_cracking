@@ -88,7 +88,7 @@ void read_commonpasswords(){
  * n^4 brute force search of all potential four char combinations
  * prints out matching hashes as well as the index
  * **/
-void four_letter_bruteforce(int hashes[10][32]){
+void four_letter_bruteforce(int hashes[30][32]){
     BYTE buf[SHA256_BLOCK_SIZE];
     SHA256_CTX ctx;
     BYTE word[4];

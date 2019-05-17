@@ -11,7 +11,7 @@
 int main(int argc, char **argv){
    int hashes[30][32];
    save_hashes(hashes);
-   //four_letter_bruteforce(hashes);
+   four_letter_bruteforce(hashes);
    
    return 0;
 }
