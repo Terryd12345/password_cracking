@@ -28,7 +28,7 @@ void save_hashes(int hashes[30][32]){
     // Loop over first 10 hashes and save them
     int j=0, e=0;
     for(int i = 0; i<320; i++){
-        if( i%32 == 0 ){
+        if( (i%32 == 0) && (i>0) ){
             j++;
             e = 0;
         }
@@ -56,8 +56,8 @@ void save_hashes(int hashes[30][32]){
 }
 
 /* Used to print hash values from array */
-void print_hashes(int hashes[10][32]){
-   for(int i=1; i<11; i++){
+void print_hashes(int hashes[30][32]){
+   for(int i=0; i<30; i++){
        for(int j=0; j<32; j++){
            printf("%02x", hashes[i][j]);
        }
