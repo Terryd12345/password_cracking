@@ -153,6 +153,7 @@ void check_six_letter_passwords(int hashes[30][32]){
    SHA256_CTX ctx;
    BYTE word[6];
    char str[20];
+   int found;
 
    FILE *fp;
    char* filename = "common_passwords.txt";
@@ -167,19 +168,35 @@ void check_six_letter_passwords(int hashes[30][32]){
       
       if( strlen(str) == 7 ){
           
-          memcpy(word, str, sizeof(word));
-          word[6] = '\0'; 
-          //printf("%s\n", str);
+        memcpy(word, str, sizeof(word));
+        word[6] = '\0'; 
+        //printf("%s\n", str);
 
-          sha256_init(&ctx);
-          sha256_update(&ctx, word, sizeof(word));
-          sha256_final(&ctx, buf);
+        sha256_init(&ctx);
+        sha256_update(&ctx, word, sizeof(word));
+        sha256_final(&ctx, buf);
 
-          printf("%s\n", word);
-          for(int i=0; i<32; i++){
-              printf("%02x", buf[i]);
-          }
-          printf("\n");
+        printf("%s\n", word);
+        for(int i=0; i<32; i++){
+            printf("%02x", buf[i]);
+        }
+        printf("\n");
+        
+        /*
+        for(int j=10; j<30; j++){
+            found = 1;
+            for(int i=0; i<32; i++){
+                if( buf[i] != hashes[j][i] ){
+                    found = 0;
+                    break;
+                }
+            }
+            if( found == 1 ){
+                ctx.data[6] = '\0';
+                printf("%s %d\n", ctx.data, j);
+            }
+        }  
+        */
       }
       
    }
