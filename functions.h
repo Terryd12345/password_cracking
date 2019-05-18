@@ -8,6 +8,7 @@ void four_letter_bruteforce(int hashes[10][32]);
 void clean_common_passwords();
 void check_six_letter_passwords(int hashes[30][32]);
 void combos_of_my_username(int hashes[30][32]);
+void find_word_in_file(char *filename, int hashes[30][32]);
 
 /* Reads binary files and saves hash values in an array */ 
 void save_hashes(int hashes[30][32]){
@@ -53,7 +54,6 @@ void save_hashes(int hashes[30][32]){
         hashes[j][e] = buffer2[i];  
         e++;
     }
-    printf("\n");
 }
 
 /* Used to print hash values from array */
@@ -153,13 +153,19 @@ void clean_common_passwords(){
 /* Create hashes from 6 letter passwords */
 void check_six_letter_passwords(int hashes[30][32]){
 
+   //find_word_in_file("common_passwords.txt", hashes);
+   find_word_in_file("100k_passwords.txt", hashes);
+
+}
+
+void find_word_in_file(char *filename, int hashes[30][32]){
    BYTE buf[SHA256_BLOCK_SIZE];
    SHA256_CTX ctx;
    BYTE word[6];
    char str[20];
+   int found;
 
    FILE *fp;
-   char* filename = "common_passwords.txt";
 
    fp = fopen(filename, "r");
    if (fp == NULL){
@@ -167,26 +173,17 @@ void check_six_letter_passwords(int hashes[30][32]){
       exit(0);
    }
     
-   while (fgets(str, 20, fp) != NULL){
+   while (fgets(str, 7, fp) != NULL){
       
-      if( strlen(str) == 7 ){
+      if( strlen(str) == 6 && str[5] != '\n' ){
           
         memcpy(word, str, sizeof(word));
         word[6] = '\0'; 
-        //printf("%s\n", str);
-
+    
         sha256_init(&ctx);
         sha256_update(&ctx, word, sizeof(word));
         sha256_final(&ctx, buf);
-
-        printf("%s\n", word);
-
-        for(int i=0; i<32; i++){
-            printf("%02x", buf[i]);
-        }
-        printf("\n");
         
-        /*
         for(int j=10; j<30; j++){
             found = 1;
             for(int i=0; i<32; i++){
@@ -197,18 +194,16 @@ void check_six_letter_passwords(int hashes[30][32]){
             }
             if( found == 1 ){
                 ctx.data[6] = '\0';
+                
                 printf("%s %d\n", ctx.data, j);
             }
         }  
-        */
+        
       }
       
    }
-   
-   
 
    fclose(fp);
-
 }
 
 void combos_of_my_username(int hashes[30][32]){
