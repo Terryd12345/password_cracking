@@ -28,25 +28,46 @@ int main(int argc, char **argv){
 }
 
 void combos_of_my_username(int hashes[30][32]){
-   char username[6] = "tdenni";
 
-   for(int a=0; a<6; a++){
-      username[a] = toupper(username[a]);
-      for(int b=0; b<6; b++){
-         username[b] = toupper(username[b]);
-         for(int c=0; c<6; c++){
-            username[c] = toupper(username[c]);
-            for(int d=0; d<6; d++){
-               username[d] = toupper(username[d]);
-               for(int e=0; e<6; e++){
-                  username[e] = toupper(username[e]);
-                  for(int f=0; f<6; f++){
-                     username[f] = toupper(username[f]);
-                     printf("%s\n", username);
-                  }
-               }
-            }
+   BYTE buf[SHA256_BLOCK_SIZE];
+   SHA256_CTX ctx;
+
+   unsigned char username[6] = "tdenni";
+   unsigned char jumbled[6];
+   int found;
+
+   for( int i=0; i<6; i++ ){
+
+      jumbled[i] = toupper(username[i]);
+
+      for( int j=0; j<6; j++ ){
+         if( j != i ){
+            jumbled[j] = username[j];
          }
       }
+
+      jumbled[6] = '\0';
+      printf("%s\n", jumbled);
+
+      sha256_init(&ctx);
+      sha256_update(&ctx, jumbled, sizeof(jumbled));
+      sha256_final(&ctx, buf);
+
+      /* Check hashes */
+      for(int j=10; j<30; j++){
+         found = 1;
+         for(int i=0; i<32; i++){
+               if( buf[i] != hashes[j][i] ){
+                  found = 0;
+                  break;
+               }
+         }
+         if( found == 1 ){
+               ctx.data[6] = '\0';
+               printf("%s %d\n", ctx.data, j);
+         }
+      }  
+      
    }
+
 }

@@ -49,15 +49,18 @@ void save_hashes(int hashes[30][32]){
             j++;
             e = 0;
         }
-        hashes[j][e] = buffer[i];  
+        hashes[j][e] = buffer2[i];  
         e++;
     }
-
+    printf("\n");
 }
 
 /* Used to print hash values from array */
 void print_hashes(int hashes[30][32]){
    for(int i=0; i<30; i++){
+       if( i%10 == 0 && i!=0 ){
+           printf("\n");
+       }
        for(int j=0; j<32; j++){
            printf("%02x", hashes[i][j]);
        }
@@ -153,7 +156,6 @@ void check_six_letter_passwords(int hashes[30][32]){
    SHA256_CTX ctx;
    BYTE word[6];
    char str[20];
-   int found;
 
    FILE *fp;
    char* filename = "common_passwords.txt";
@@ -177,6 +179,7 @@ void check_six_letter_passwords(int hashes[30][32]){
         sha256_final(&ctx, buf);
 
         printf("%s\n", word);
+
         for(int i=0; i<32; i++){
             printf("%02x", buf[i]);
         }
