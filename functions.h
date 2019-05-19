@@ -194,8 +194,7 @@ void find_word_in_file(char *filename, int hashes[30][32]){
             }
             if( found == 1 ){
                 ctx.data[6] = '\0';
-                
-                printf("%s %d\n", ctx.data, j);
+                printf("%s %d\n", ctx.data, j);        
             }
         }  
         
